@@ -162,6 +162,7 @@ class trasiningManager(Parameter):
         plt.show()
 
     def train_and_evaluate(self):
+        best_accuracy = 0  # 初始化最佳准确率为 0
         for epoch in range(1, self.epochs + 1):
             # 训练
             train_loss = self.train_model()
@@ -178,8 +179,11 @@ class trasiningManager(Parameter):
             # 输出结果
             print(f"Epoch {epoch}/{self.epochs}")
             print(f"训练集损失: {train_loss:.4f}, 验证集损失: {valid_loss:.4f}, 测试集准确率: {acc:.2f}%")
-            # 保存模型
-            self.save_model(valid_loss)
+            
+            # 如果当前准确率优于历史最好的准确率，则保存模型
+           if acc > best_accuracy:
+            best_accuracy = acc
+            self.save_model(valid_loss)  
 
         # 绘制训练过程中的准确率变化曲线
         self.plot_accuracy_curve()    
