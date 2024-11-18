@@ -183,7 +183,8 @@ class trasiningManager(Parameter):
             # 如果当前准确率优于历史最好的准确率，则保存模型
            if acc > best_accuracy:
             best_accuracy = acc
-            self.save_model(valid_loss)  
+            self.save_model(valid_loss) 
+            print(f"模型保存：新最佳准确率 {acc:.2f}%")
 
         # 绘制训练过程中的准确率变化曲线
         self.plot_accuracy_curve()    
