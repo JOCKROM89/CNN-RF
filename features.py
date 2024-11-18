@@ -1,52 +1,28 @@
 import torch
 import numpy as np
 from cnn_model import Net
-import torchvision.transforms as transforms
-from torchvision.datasets import CIFAR10
-from torch.utils.data import DataLoader
-from torch.utils.data.sampler import SubsetRandomSampler
+from get_data import get_data_loaders
+
+
 model_path ='E:\python\study python\CNN-RF\model\model_1.pth'
 model = Net()
 train_on_gpu = torch.cuda.is_available()
 if train_on_gpu:
     model.cuda()
 
-valid_size = 0.2
-# 获取将用于验证的培训指标
-# num_train = len(trainset)
-num_train =20000#控制样本数量
-indices = list(range(num_train))
-np.random.shuffle(indices)
-split = int(np.floor(valid_size * num_train))
-train_idx, valid_idx = indices[split:], indices[:split]
-# 数据预处理和加载
-transform_train = transforms.Compose([
-    transforms.RandomCrop(32, padding=4),# 随机裁剪
-    transforms.RandomHorizontalFlip(),#随机变换
-    transforms.ToTensor(),#转换为张量
-    transforms.Normalize(mean=[0.5, 0.5, 0.5], std=[0.5, 0.5, 0.5])
-])
-transform_test = transforms.Compose([
-    transforms.ToTensor(),
-    transforms.Normalize(mean=[0.5, 0.5, 0.5], std=[0.5, 0.5, 0.5])
-])
-train_sampler = SubsetRandomSampler(train_idx)
-trainset = CIFAR10(root='./data', train=True, download=True, transform=transform_train)
-testset = CIFAR10(root='./data', train=False, download=True, transform=transform_test)
-trainloader = DataLoader(trainset, batch_size=64,sampler=train_sampler, num_workers=0)
-testloader = DataLoader(testset, batch_size=64, num_workers=0)
-
+trainloader, validloader, testloader = get_data_loaders()
 
 class Parameter():
-    def __init__(self,model_path,model,train_on_gpu,testloader):
+    def __init__(self,model_path,model,train_on_gpu,trainloader,testloader):
         self.model_path = model_path
         self.model = model
         self.train_on_gpu = train_on_gpu
+        self.trainloader = trainloader
         self.testloader = testloader
 
 class Getfeatures(Parameter):
-    def __init__(self, model_path, model, train_on_gpu,testloader):
-        super().__init__(model_path, model,train_on_gpu,testloader)
+    def __init__(self, model_path, model, train_on_gpu,trainloader,testloader):
+        super().__init__(model_path, model,train_on_gpu,trainloader,testloader)
         self.features =[]
         self.X_train_features = []
         self.x_train = []
@@ -103,13 +79,13 @@ class Getfeatures(Parameter):
         y_test = np.concatenate(self.y_test, axis=0)
 
         hook.remove()
-        # print("Train features:", X_train_features)
-        # print("Train labels:", x_train)
-        # print("Test features:", Y_test_features)
-        # print("Test labels:", y_test)
+        print("Train features:", X_train_features)
+        print("Train labels:", x_train)
+        print("Test features:", Y_test_features)
+        print("Test labels:", y_test)
         return X_train_features,x_train,Y_test_features,y_test
     
 
 
-features = Getfeatures(model_path, model, train_on_gpu, testloader)
+features = Getfeatures(model_path, model, train_on_gpu,trainloader, testloader)
 X_train_features, x_train,Y_test_features,y_test = features.extract_features()
