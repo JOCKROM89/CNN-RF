@@ -17,3 +17,6 @@ CIFAR-10 数据集由 10 个类的 60000 张 32x32 彩色图像组成，每个�
 
 下载地址：https://www.cs.toronto.edu/~kriz/cifar.html
 
+## CNN模型
+具体代码参考cnn_model.py
+该模型是由4个卷积层、2个池化层、2个全连接层构成
