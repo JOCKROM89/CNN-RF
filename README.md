@@ -1,5 +1,6 @@
 # CNN-RF
 Use CNN-RF to  Identify images
+
 使用卷积神经网络和随机森林来实现对图像集的辨别分类
 ## 环境
 * Python 3.10及以上
@@ -13,4 +14,6 @@ CIFAR-10 数据集由 10 个类的 60000 张 32x32 彩色图像组成，每个�
 以下是数据集中的类，以及每个类的 10 张随机图像：
 
 ![image](https://github.com/JOCKROM89/CNN-RF/blob/master/data/Snipaste_2024-11-18_09-18-54.png)
+
+下载地址：https://www.cs.toronto.edu/~kriz/cifar.html
 
