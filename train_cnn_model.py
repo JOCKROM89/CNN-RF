@@ -2,53 +2,16 @@ import torch
 import numpy as np
 import matplotlib.pyplot as plt
 from cnn_model import Net
-import torchvision.transforms as transforms
-from torchvision.datasets import CIFAR10
-from torch.utils.data.sampler import SubsetRandomSampler
 import torch.nn as nn
 import torch.optim as optim
-
-
+from get_data import get_data_loaders
 
 # 定义超参数
 lr = 0.001
-batch_size = 64
 num_epochs = 20
-valid_size = 0.2 # 用作验证的训练集百分比
-model_path ='E:\python\study python\CNN-RF\model\model_1.pth' #模型保存路径
-
-# 数据增强和预处理
-transform_train = transforms.Compose([
-    transforms.RandomCrop(32, padding=4),# 随机裁剪
-    transforms.RandomHorizontalFlip(),   #随机变换
-    transforms.ToTensor(),             #转换为张量
-    transforms.Normalize(mean=[0.5, 0.5, 0.5], std=[0.5, 0.5, 0.5]) #归一化
-])
-transform_test = transforms.Compose([
-    transforms.ToTensor(), #转换为张量
-    transforms.Normalize(mean=[0.5, 0.5, 0.5], std=[0.5, 0.5, 0.5])
-])
-
-#加载数据集
-trainset = CIFAR10(root='.\data', train=True, download=True, transform=transform_train)
-testset = CIFAR10(root='.\data', train=False, download=True, transform=transform_test)
-
-# 选择用于验证的训练集样本
-num_train =20000#控制样本数量
-indices = list(range(num_train))
-np.random.shuffle(indices)
-split = int(np.floor(valid_size * num_train))
-train_idx, valid_idx = indices[split:], indices[:split]
-
-# 定义用于获得培训和验证批次的采样器
-train_sampler = SubsetRandomSampler(train_idx)
-valid_sampler = SubsetRandomSampler(valid_idx)
-
-# 准备数据加载器 (组合数据集和采样器 )
-trainloader = torch.utils.data.DataLoader(trainset, batch_size=batch_size,sampler=train_sampler, num_workers=0)
-validloader = torch.utils.data.DataLoader(trainset, batch_size=batch_size,sampler=valid_sampler, num_workers=0)
-testloader = torch.utils.data.DataLoader(testset, batch_size=batch_size,num_workers=0)
-
+# 用作验证的训练集百分比
+model_path ='E:\python\study python\CNN-RF\model\model_3.pth' #模型保存路径
+trainloader, validloader, testloader = get_data_loaders()
 # 定义模型、损失函数和优化器
 model = Net() #加载模型
 device = torch.device("cuda:0")  # 使用 GPU 0
@@ -162,7 +125,7 @@ class trasiningManager(Parameter):
         plt.show()
 
     def train_and_evaluate(self):
-        best_accuracy = 0  # 初始化最佳准确率为 0
+        best_acc = 0.0
         for epoch in range(1, self.epochs + 1):
             # 训练
             train_loss = self.train_model()
@@ -179,12 +142,12 @@ class trasiningManager(Parameter):
             # 输出结果
             print(f"Epoch {epoch}/{self.epochs}")
             print(f"训练集损失: {train_loss:.4f}, 验证集损失: {valid_loss:.4f}, 测试集准确率: {acc:.2f}%")
-            
-            # 如果当前准确率优于历史最好的准确率，则保存模型
-           if acc > best_accuracy:
-            best_accuracy = acc
-            self.save_model(valid_loss) 
-            print(f"模型保存：新最佳准确率 {acc:.2f}%")
+            # 保存模型
+            if acc > best_acc:
+                best_acc = acc
+                # 保存模型
+                self.save_model(valid_loss)
+                print(f"模型保存, 新的最佳准确率: {best_acc:.2f}%")
 
         # 绘制训练过程中的准确率变化曲线
         self.plot_accuracy_curve()    
@@ -193,7 +156,7 @@ class trasiningManager(Parameter):
 
 
 
-trainer = trasiningManager(model, trainloader, validloader, testloader, optimizer, criterion, train_on_gpu, model_path, epochs=30)
+trainer = trasiningManager(model, trainloader, validloader, testloader, optimizer, criterion, train_on_gpu, model_path, epochs=3)
 trainer.train_and_evaluate()
 
 
