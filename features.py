@@ -86,6 +86,6 @@ class Getfeatures(Parameter):
         return X_train_features,x_train,Y_test_features,y_test
     
 
-
-# features = Getfeatures(model_path, model, train_on_gpu,trainloader, testloader)
-# X_train_features, x_train,Y_test_features,y_test = features.extract_features()
+if __name__=="__main__"
+    features = Getfeatures(model_path, model, train_on_gpu,trainloader, testloader)
+    X_train_features, x_train,Y_test_features,y_test = features.extract_features()
