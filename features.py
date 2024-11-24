@@ -2,90 +2,71 @@ import torch
 import numpy as np
 from cnn_model import Net
 from get_data import get_data_loaders
+import torch.nn as nn
 
-
-model_path ='E:\python\study python\CNN-RF\model\model_1.pth'
+# 模型路径及数据加载
+model_path = 'E:\python\study python\CNN-RF\model\model_1.pth'#保存的CNN模型
 model = Net()
-train_on_gpu = torch.cuda.is_available()
+train_on_gpu = torch.cuda.is_available()  # 判断是否有可用的GPU
 if train_on_gpu:
-    model.cuda()
+    model.cuda()  # 将模型移动到GPU
 
-trainloader, validloader, testloader = get_data_loaders()
+# 获取训练、验证和测试数据加载器
+trainloader, validloader, testloader, testset = get_data_loaders()
 
 class Parameter():
-    def __init__(self,model_path,model,train_on_gpu,trainloader,testloader):
+    def __init__(self, model_path, model, train_on_gpu, trainloader, testloader):
+        # 初始化类，传入模型路径、模型、是否使用GPU、训练集和测试集数据加载器
         self.model_path = model_path
         self.model = model
         self.train_on_gpu = train_on_gpu
         self.trainloader = trainloader
         self.testloader = testloader
 
-class Getfeatures(Parameter):
-    def __init__(self, model_path, model, train_on_gpu,trainloader,testloader):
-        super().__init__(model_path, model,train_on_gpu,trainloader,testloader)
-        self.features =[]
-        self.X_train_features = []
-        self.x_train = []
-        self.Y_test_features = []
-        self.y_test = []
-        self.features = []
-    
-    def get_features_hook(self,module, input, output):
-        self.features.append(output.cpu().detach().numpy())  # 将特征保存在`features`列表中
+class GetFeatures(Parameter):
+    def __init__(self, model_path, model, train_on_gpu, trainloader, testloader):
+        # 初始化继承父类Parameter
+        super().__init__(model_path, model, train_on_gpu, trainloader, testloader)
+        self.model.eval()  # 设置模型为评估模式，禁用dropout等训练时特有的行为
+        self.features = []  # 存储特征
+        self.X_train_features = []  # 存储训练数据的特征
+        self.x_train = []  # 存储训练数据的标签
+        self.Y_test_features = []  # 存储测试数据的特征
+        self.y_test = []  # 存储测试数据的标签
 
     def extract_features(self):
-        conv3_layer = model.conv3
-        hook = conv3_layer.register_forward_hook(self.get_features_hook)
-        self.model.eval()
-        with torch.no_grad():
-            for inputs, labels in trainloader:
-                if train_on_gpu:
-                    inputs = inputs.cuda()
-                    labels = labels.cuda()
-                
-                # 前向传播（这时钩子会被触发）
-                outputs = model(inputs)
-                
-                # 保存特征（钩子自动调用）
-                label_array = labels.cpu().numpy()
-                
-                # 将特征和标签保存到列表中
-                features_array = self.features[-1]  # 取最后一批数据的输出特征
-                self.X_train_features.append(features_array)
-                self.x_train.append(label_array)
+        # 替换全连接层（fc3）为Identity层，仅提取特征
+        fc_layer = self.model.fc3
+        self.model.fc3 = nn.Identity()
 
+        # 提取训练数据的特征
+        self._extract_data_features(self.trainloader, self.X_train_features, self.x_train)
+        
+        # 将训练集的特征和标签合并为numpy数组
         X_train_features = np.concatenate(self.X_train_features, axis=0)
         x_train = np.concatenate(self.x_train, axis=0)
 
-
-        with torch.no_grad():
-            for inputs, labels in testloader:
-                if train_on_gpu:
-                    inputs = inputs.cuda()
-                    labels = labels.cuda()
-                
-                # 前向传播（这时钩子会被触发）
-                outputs = model(inputs)
-                
-                # 保存特征（钩子自动调用）
-                label_array = labels.cpu().numpy()
-                
-                # 将特征和标签保存到列表中
-                features_array = self.features[-1]  # 取最后一批数据的输出特征
-                self.Y_test_features.append(features_array)
-                self.y_test.append(label_array)
-
+        # 提取测试数据的特征
+        self._extract_data_features(self.testloader, self.Y_test_features, self.y_test)
+        
+        # 将测试集的特征和标签合并为numpy数组
         Y_test_features = np.concatenate(self.Y_test_features, axis=0)
         y_test = np.concatenate(self.y_test, axis=0)
 
-        hook.remove()
-        print("Train features:", X_train_features)
-        print("Train labels:", x_train)
-        print("Test features:", Y_test_features)
-        print("Test labels:", y_test)
-        return X_train_features,x_train,Y_test_features,y_test
-    
+        return X_train_features, x_train, Y_test_features, y_test
 
-if __name__=="__main__"
-    features = Getfeatures(model_path, model, train_on_gpu,trainloader, testloader)
-    X_train_features, x_train,Y_test_features,y_test = features.extract_features()
+    def _extract_data_features(self, dataloader, feature_list, label_list):
+        # 遍历数据加载器提取特征
+        with torch.no_grad():  # 在不计算梯度的情况下执行推理
+            for inputs, labels in dataloader:
+                if self.train_on_gpu:
+                    inputs, labels = inputs.cuda(), labels.cuda()  # 将数据移动到GPU
+
+                # 通过模型进行前向传递，得到输出特征
+                outputs = self.model(inputs)
+                features = outputs.cpu().numpy()  # 从模型输出中获取特征，并转换为numpy数组
+                labels = labels.cpu().numpy()    # 获取标签并转换为numpy数组
+
+                # 将特征和标签添加到对应的列表中
+                feature_list.append(features)
+                label_list.append(labels)
