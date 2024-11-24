@@ -12,7 +12,7 @@ num_epochs = 20
 # 用作验证的训练集百分比
 model_path ='E:\python\study python\CNN-RF\model\model_1.pth' #模型保存路径
 # 加载数据
-trainloader, validloader, testloader = get_data_loaders()
+trainloader, validloader, testloader,_ = get_data_loaders()
 # 定义模型、损失函数和优化器
 model = Net() #加载模型
 device = torch.device("cuda:0")  # 使用 GPU 0
