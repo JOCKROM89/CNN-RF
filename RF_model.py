@@ -36,8 +36,8 @@ from sklearn.model_selection import cross_val_score
 rf.fit(X_train_features, x_train)
 y_pred =rf.predict(y_features_test)
 # 计算分类精度
-accuracy=accuracy_score( y_test,y_pred )
-print('CNN+RF训练准确度:', accuracy*100, '%.')
+accuracy=accuracy_score( y_test,y_pred )*100
+print('CNN+RF训练准确度为：{:.2f} %'.format(accuracy))
 
 classes = ['airplane', 'automobile', 'bird', 'cat', 'deer',
           'dog', 'frog', 'horse', 'ship', 'truck']
