@@ -26,3 +26,11 @@ CIFAR-10 数据集由 10 个类的 60000 张 32x32 彩色图像组成，每个�
 ## 训练与验证CNN模型
 通过运行train_cnn_model.py来对CNN模型训练与验证，在训练过程中如果准确率提升则对训练的模型进行保存。训练完成后会输出准确率变化曲线和模型学习曲线，用来显示在训练过程中模型参数的变化。
 该模型的训练在验证集上准确率最佳在89%左右，训练次数为70~80次。过多的训练次数并不能提高模型对图像分类的准确性。
+
+##随机森林混淆矩阵
+
+![image](https://github.com/JOCKROM89/CNN-RF/blob/master/data/Snipaste_2024-11-24_20-39-32.png)
+
+##随机抽取8张图片进行验证
+
+![image](https://github.com/JOCKROM89/CNN-RF/blob/master/data/Snipaste_2024-11-24_20-39-13.png)
