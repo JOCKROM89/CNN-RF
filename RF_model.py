@@ -19,7 +19,7 @@ features = GetFeatures(state_dict, model, train_on_gpu,trainloader, testloader)
 X_train_features, x_train,Y_test_features,y_test = features.extract_features()
 
 
-#建立随机森林模型(300棵树，树树的层数为19（可能过拟合），每棵树选用数据集的最大特征数为10)
+#建立随机森林模型(300棵树，每棵树的层数为19（可能过拟合），每棵树选用数据集的最大特征数为10)
 rf = RandomForestClassifier(n_estimators=300, random_state=71,max_depth=19,n_jobs=-1,max_features=10)
 #数据标准化 特征标度
 scaler = StandardScaler()
