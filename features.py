@@ -34,28 +34,7 @@ class GetFeatures(Parameter):
         self.Y_test_features = []  # 存储测试数据的特征
         self.y_test = []  # 存储测试数据的标签
 
-    def extract_features(self):
-        # 替换全连接层（fc3）为Identity层，仅提取特征
-        fc_layer = self.model.fc3
-        self.model.fc3 = nn.Identity()
-
-        # 提取训练数据的特征
-        self._extract_data_features(self.trainloader, self.X_train_features, self.x_train)
-        
-        # 将训练集的特征和标签合并为numpy数组
-        X_train_features = np.concatenate(self.X_train_features, axis=0)
-        x_train = np.concatenate(self.x_train, axis=0)
-
-        # 提取测试数据的特征
-        self._extract_data_features(self.testloader, self.Y_test_features, self.y_test)
-        
-        # 将测试集的特征和标签合并为numpy数组
-        Y_test_features = np.concatenate(self.Y_test_features, axis=0)
-        y_test = np.concatenate(self.y_test, axis=0)
-
-        return X_train_features, x_train, Y_test_features, y_test
-
-    def _extract_data_features(self, dataloader, feature_list, label_list):
+     def _extract_data_features(self, dataloader, feature_list, label_list):
         # 遍历数据加载器提取特征
         with torch.no_grad():  # 在不计算梯度的情况下执行推理
             for inputs, labels in dataloader:
@@ -70,3 +49,22 @@ class GetFeatures(Parameter):
                 # 将特征和标签添加到对应的列表中
                 feature_list.append(features)
                 label_list.append(labels)
+                
+    def extract_features(self):
+        # 替换全连接层（fc3）为Identity层，仅提取特征
+        fc_layer = self.model.fc3
+        self.model.fc3 = nn.Identity()
+        # 提取训练数据的特征
+        self._extract_data_features(self.trainloader, self.X_train_features, self.x_train)
+        # 将训练集的特征和标签合并为numpy数组
+        X_train_features = np.concatenate(self.X_train_features, axis=0)
+        x_train = np.concatenate(self.x_train, axis=0)
+        # 提取测试数据的特征
+        self._extract_data_features(self.testloader, self.Y_test_features, self.y_test)
+        # 将测试集的特征和标签合并为numpy数组
+        Y_test_features = np.concatenate(self.Y_test_features, axis=0)
+        y_test = np.concatenate(self.y_test, axis=0)
+
+        return X_train_features, x_train, Y_test_features, y_test
+
+   
